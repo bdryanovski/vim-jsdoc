@@ -102,9 +102,7 @@ function! jsdoc#insert()
   if g:jsdoc_input_description == 1
     let l:desc = input('Description: ')
   endif
-  call add(l:lines, l:space. '/**')
-  call add(l:lines, l:space . ' * ' . l:desc)
-  call add(l:lines, l:space . ' *')
+  call add(l:lines, l:space . '/*')
   let l:funcName = ''
   if l:flag
     let l:funcName = substitute(l:line, l:regex, '\1', "g")
@@ -113,8 +111,13 @@ function! jsdoc#insert()
 
     if g:jsdoc_additional_descriptions == 1
       call add(l:lines, l:space . ' * @name ' . l:funcName)
-      call add(l:lines, l:space . ' * @function')
+      call add(l:lines, l:space . ' * @function ' . l:funcName)
     endif
+
+    call add(l:lines, l:space . ' * ')
+    call add(l:lines, l:space . ' * @description')
+    call add(l:lines, l:space . ' *   ' . l:desc)
+    call add(l:lines, l:space . ' * ')
 
     if g:jsdoc_access_descriptions > 0
       let l:access = 'public'
@@ -139,6 +142,13 @@ function! jsdoc#insert()
 
     endif
 
+    " Ask member information
+
+    let l:memberOf = input('Member of : ')
+    if l:memberOf != ''
+      call add(l:lines, l:space . ' * @memberof ' . l:memberOf)
+    endif
+
     for l:arg in l:args
       if g:jsdoc_allow_input_prompt == 1
         let l:argType = input('Argument "' . l:arg . '" type: ', '', 'custom,jsdoc#listDataTypes')
@@ -152,6 +162,7 @@ function! jsdoc#insert()
         call add(l:lines, l:space . ' * @param ' . l:arg)
       endif
     endfor
+
   endif
   if g:jsdoc_return == 1
     if g:jsdoc_allow_input_prompt == 1
