@@ -1,9 +1,9 @@
 " File: jsdoc.vim
 " Author: NAKAMURA, Hisashi <https://github.com/sunvisor>
 " Modifyed: Shinya Ohyanagi <sohyanagi@gmail.com>
-" Version:  0.1.0
+" Version:  0.3.0
 " WebPage:  http://github.com/heavenshell/vim-jsdoc/
-" Description: Generate JsDoc to your JavaScript file.
+" Description: Generate JSDoc to your JavaScript file.
 " License: BSD, see LICENSE for more details.
 
 let s:save_cpo = &cpo
@@ -50,15 +50,57 @@ endif
 if !exists('g:jsdoc_allow_shorthand')
   let g:jsdoc_allow_shorthand = 0
 endif
-" Use seperator between @param name and description.
-if !exists('g:jsdoc_param_description_seperator')
-	let g:jsdoc_param_description_seperator = " "
+" Use separator between @param name and description.
+if !exists('g:jsdoc_param_description_separator')
+    let g:jsdoc_param_description_separator = " "
+endif
+
+" Insert defined type and description if arg is matched to defined regex.
+if !exists('g:jsdoc_custom_args_hook')
+  let g:jsdoc_custom_args_hook = {}
 endif
 
 " Return data types for argument type auto completion :)
 function! jsdoc#listDataTypes(A,L,P)
   let l:types = ['boolean', 'null', 'undefined', 'number', 'string', 'symbol', 'object']
   return join(l:types, "\n")
+endfunction
+
+function! s:hookArgs(lines, space, arg, hook, argType, argDescription)
+  " Hook function signature's args for insert as default value.
+  if g:jsdoc_custom_args_hook == {}
+    call add(a:lines, a:space . ' * @param ' . a:arg)
+  else
+    let l:matchedArg = matchstr(a:hook, a:arg)
+    if l:matchedArg == ''
+      let l:type = '{' . a:argType . '} '
+      let l:description = ''
+      if a:argDescription != ''
+        let l:description = g:jsdoc_param_description_separator . a:argDescription
+      endif
+      call add(a:lines, a:space . ' * @param ' . l:type . a:arg . l:description)
+    else
+      let l:type = ''
+      let l:customArg = g:jsdoc_custom_args_hook[l:matchedArg]
+      if a:argType == ''
+        if has_key(l:customArg, 'type')
+          let l:type = l:customArg['type'] . ' '
+        endif
+      else
+        let l:type = '{' . a:argType . '} '
+      endif
+      let l:description = ''
+      if a:argDescription == ''
+        if has_key(l:customArg, 'description')
+          let l:description = g:jsdoc_param_description_separator . l:customArg['description']
+        endif
+      else
+        let l:description = g:jsdoc_param_description_separator . a:argDescription
+      endif
+      call add(a:lines, a:space . ' * @param ' . l:type . a:arg . l:description)
+    endif
+  endif
+  return a:lines
 endfunction
 
 function! jsdoc#insert()
@@ -123,6 +165,7 @@ function! jsdoc#insert()
     call add(l:lines, l:space . ' * ')
     call add(l:lines, l:space . ' * @description ')
     call add(l:lines, l:space . ' *   ' . l:desc)
+    call add(l:lines, l:space . ' * ')
 
     if g:jsdoc_access_descriptions > 0
       let l:access = 'public'
@@ -147,17 +190,24 @@ function! jsdoc#insert()
 
     endif
 
+    let hook = keys(g:jsdoc_custom_args_hook)
     for l:arg in l:args
       if g:jsdoc_allow_input_prompt == 1
         let l:argType = input('Argument "' . l:arg . '" type: ', '', 'custom,jsdoc#listDataTypes')
         let l:argDescription = input('Argument "' . l:arg . '" description: ')
-        " Prepend seperator to start of description only if it was provided
-        if l:argDescription != ''
-          let l:argDescription = g:jsdoc_param_description_seperator . l:argDescription
+
+        if g:jsdoc_custom_args_hook == {}
+          " Prepend separator to start of description only if it was provided
+          if l:argDescription != ''
+            let l:argDescription = g:jsdoc_param_description_separator . l:argDescription
+          endif
+          call add(l:lines, l:space . ' * @param {' . l:argType . '} ' . l:arg . l:argDescription)
+        else
+          let l:lines = s:hookArgs(l:lines, l:space, l:arg, l:hook, l:argType, l:argDescription)
         endif
-        call add(l:lines, l:space . ' * @param {' . l:argType . '} ' . l:arg . l:argDescription)
       else
-        call add(l:lines, l:space . ' * @param ' . l:arg)
+        " Hook args.
+        let l:lines = s:hookArgs(l:lines, l:space, l:arg, l:hook, '', '')
       endif
     endfor
   endif
