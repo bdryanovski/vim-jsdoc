@@ -144,7 +144,7 @@ function! jsdoc#insert()
   if g:jsdoc_input_description == 1
     let l:desc = input('Description: ')
   endif
-  call add(l:lines, l:space . '/*')
+  call add(l:lines, l:space . '/**')
   let l:funcName = ''
   if l:flag
     let l:funcName = substitute(l:line, l:regex, '\1', "g")
@@ -162,10 +162,10 @@ function! jsdoc#insert()
       call add(l:lines, l:space . ' * @memberof ' . l:argMemberOf)
     endif
 
-    call add(l:lines, l:space . ' * ')
-    call add(l:lines, l:space . ' * @description ')
+    call add(l:lines, l:space . ' *')
+    call add(l:lines, l:space . ' * @description')
     call add(l:lines, l:space . ' *   ' . l:desc)
-    call add(l:lines, l:space . ' * ')
+    call add(l:lines, l:space . ' *')
 
     if g:jsdoc_access_descriptions > 0
       let l:access = 'public'
@@ -215,6 +215,9 @@ function! jsdoc#insert()
     if g:jsdoc_allow_input_prompt == 1
       let l:returnType = input('Return type (blank for no @return): ', '', 'custom,jsdoc#listDataTypes')
       let l:returnDescription = ''
+      if l:returnType == ''
+        let l:returnType = 'undefined'
+      endif
       if l:returnType != ''
         if g:jsdoc_return_description == 1
           let l:returnDescription = input('Return description: ')
