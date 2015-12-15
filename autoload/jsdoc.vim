@@ -153,7 +153,6 @@ function! jsdoc#insert()
 
     if g:jsdoc_additional_descriptions == 1
       call add(l:lines, l:space . ' * @name ' . l:funcName)
-      call add(l:lines, l:space . ' * @function ' . l:funcName)
     endif
 
     let l:argMemberOf = input('Member of : ')
