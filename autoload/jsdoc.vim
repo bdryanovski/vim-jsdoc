@@ -69,7 +69,7 @@ endfunction
 function! jsdoc#type(name)
   let l:myMakeTargets = ["", "boolean", "null", "undefined", "number", "string", "symbol", "object"]
   let l:c = 0
-  let l:c = confirm("Param ". a:name ." type is: ","&boolean\n&null\n&undefined\nnu&mber\n&string\ns&ymbol\n&oobject",0)
+  let l:c = confirm("Param ". a:name ." type is: ","&boolean\n&null\n&undefined\nnu&mber\n&string\ns&ymbol\n&object",0)
   if l:c != 0
     if l:myMakeTargets[l:c] == ""
       return "undefined"
