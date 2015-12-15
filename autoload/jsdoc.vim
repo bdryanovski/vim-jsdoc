@@ -66,6 +66,19 @@ function! jsdoc#listDataTypes(A,L,P)
   return join(l:types, "\n")
 endfunction
 
+function! jsdoc#type(name)
+  let l:myMakeTargets = ["", "boolean", "null", "undefined", "number", "string", "symbol", "object"]
+  let l:c = 0
+  let l:c = confirm("Param ". a:name ." type is: ","&boolean\n&null\n&undefined\nnu&mber\n&string\ns&ymbol\n&oobject",0)
+  if l:c != 0
+    if l:myMakeTargets[l:c] == ""
+      return "undefined"
+    endif
+    return l:myMakeTargets[l:c]
+  endif
+  return "undefined"
+endfunction
+
 function! s:hookArgs(lines, space, arg, hook, argType, argDescription)
   " Hook function signature's args for insert as default value.
   if g:jsdoc_custom_args_hook == {}
@@ -192,7 +205,8 @@ function! jsdoc#insert()
     let hook = keys(g:jsdoc_custom_args_hook)
     for l:arg in l:args
       if g:jsdoc_allow_input_prompt == 1
-        let l:argType = input('Argument "' . l:arg . '" type: ', '', 'custom,jsdoc#listDataTypes')
+        "let l:argType = input('Argument "' . l:arg . '" type: ', '', 'custom,jsdoc#listDataTypes')
+        let l:argType = jsdoc#type(l:arg)
         let l:argDescription = input('Argument "' . l:arg . '" description: ')
 
         if g:jsdoc_custom_args_hook == {}
