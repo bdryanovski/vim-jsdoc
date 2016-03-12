@@ -62,14 +62,14 @@ endif
 
 " Return data types for argument type auto completion :)
 function! jsdoc#listDataTypes(A,L,P)
-  let l:types = ['boolean', 'null', 'undefined', 'number', 'string', 'symbol', 'object']
+  let l:types = ['boolean', 'null', 'undefined', 'number', 'string', 'symbol', 'object', 'array', 'function']
   return join(l:types, "\n")
 endfunction
 
 function! jsdoc#type(name)
-  let l:myMakeTargets = ["", "boolean", "null", "undefined", "number", "string", "symbol", "object"]
+  let l:myMakeTargets = ["", "boolean", "null", "undefined", "number", "string", "symbol", "object", "array", "function"]
   let l:c = 0
-  let l:c = confirm("Param ". a:name ." type is: ","&boolean\n&null\n&undefined\nnu&mber\n&string\ns&ymbol\n&object",0)
+  let l:c = confirm("Param ". a:name ." type is: ","&boolean\n&null\n&undefined\nnu&mber\n&string\ns&ymbol\n&object\n&array\n&function",0)
   if l:c != 0
     if l:myMakeTargets[l:c] == ""
       return "undefined"
@@ -166,6 +166,7 @@ function! jsdoc#insert()
 
     if g:jsdoc_additional_descriptions == 1
       call add(l:lines, l:space . ' * @name ' . l:funcName)
+      call add(l:lines, l:space . ' * @function ' . l:funcName)
     endif
 
     let l:argMemberOf = input('Member of : ')
